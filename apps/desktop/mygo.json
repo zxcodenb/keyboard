@@ -1,0 +1,13 @@
+{
+  "name": "光序",
+  "identifier": "local.keyboard.lightstudio",
+  "version": "0.1.0",
+  "main": "../../cmd/desktop",
+  "devUrl": "http://127.0.0.1:5173",
+  "devCommand": "npm run dev:web",
+  "buildCommand": "npm run build:web",
+  "frontendDist": "dist",
+  "bindings": "frontend/src/mygo.ts",
+  "out": "build",
+  "macos": { "signingIdentity": "-" }
+}
