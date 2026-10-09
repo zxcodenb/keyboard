@@ -8,6 +8,6 @@
   "frontendDist": "dist",
   "bindings": "src/mygo.ts",
   "out": "build",
-  "resources": ["../rk.py", "bridge.py"],
+  "resources": ["../rk98", "bridge.py"],
   "macos": { "signingIdentity": "-" }
 }

@@ -10,7 +10,7 @@
     直接回车             跳过（该索引无灯或看不清）
     q + 回车             提前结束
 
-结果保存到 keymap_r98.json，下次运行会接着已有的进度。
+结果保存到仓库根目录的 keymap_r98.json，下次运行会接着已有的进度。
 """
 import json
 import os
@@ -18,9 +18,12 @@ import sys
 import threading
 import time
 
-import rk
+# 让 tools/ 下的脚本也能导入仓库根目录的 rk98 包
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, ROOT)
+import rk98
 
-PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "keymap_r98.json")
+PATH = os.path.join(ROOT, "keymap_r98.json")
 
 # 终端里按方向键等会读成 ANSI 转义序列，这里翻译回键名
 FIX = {
@@ -57,13 +60,13 @@ def start_lamp(index):
     stop = threading.Event()
 
     def run():
-        stream = rk.groups_to_stream([((255, 0, 0), [index])])
-        reports = rk.packetize(stream)
+        stream = rk98.groups_to_stream([((255, 0, 0), [index])])
+        reports = rk98.packetize(stream)
         dev = None
         while not stop.is_set():
             if dev is None:
                 try:
-                    dev = rk.open_dev()
+                    dev = rk98.open_dev()
                 except Exception:
                     time.sleep(0.5)
                     continue
@@ -71,7 +74,7 @@ def start_lamp(index):
                 for i, r in enumerate(reports):
                     dev.write(list(r))
                     if i + 1 < len(reports):
-                        time.sleep(rk.GAP_MS / 1000.0)
+                        time.sleep(rk98.GAP_MS / 1000.0)
             except OSError:
                 try:
                     dev.close()

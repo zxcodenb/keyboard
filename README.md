@@ -1,6 +1,6 @@
 # 光序 · 键盘灯光工作室
 
-基于 [MyGo](https://github.com/egoist/mygo) 的个人 macOS 灯光控制应用，适配本项目的 **RK R98 / 2.4G 接收器**。没有账号、网络服务、遥测或分发流程。现有命令行脚本保持不变。
+基于 [MyGo](https://github.com/egoist/mygo) 的个人 macOS 灯光控制应用，适配本项目的 **RK R98 / 2.4G 接收器**。没有账号、网络服务、遥测或分发流程。桌面端与命令行共用 `rk98/` 里的同一套协议实现。
 
 ## 直接打开
 
@@ -33,9 +33,23 @@ macOS 可能要求「输入监控」权限来打开键盘接收器。若出现�
 
 ### 已知映射范围
 
-可视化键盘包含 98 个按键。索引沿用 `rk.py` 的 `KEYMAP`、`NUMPAD`：右侧高位索引（包括 `102`～`112` 中已有映射的灯）也参与全键控制。`keymap_r98.json` 记录数字锁定键仍存疑，主键区部分键位也尚未逐点确认；界面仅展示现有映射，不能替代实物逐键校验。
+可视化键盘包含 98 个按键。索引沿用 `rk98/protocol.py` 的 `KEYMAP`、`NUMPAD`：右侧高位索引（包括 `102`～`112` 中已有映射的灯）也参与全键控制。`keymap_r98.json` 记录数字锁定键仍存疑，主键区部分键位也尚未逐点确认；界面仅展示现有映射，不能替代实物逐键校验。
 
-请勿同时运行 `rk.py --stay`、`sweep.py` 等其他会写入灯光的脚本，以免互相覆盖。
+请勿同时运行 `python -m rk98 --stay`、`tools/sweep.py` 等其他会写入灯光的脚本，以免互相覆盖。
+
+## 命令行控制
+
+协议与设备操作都在 `rk98/` 包内：`protocol.py` 只做编解码，`device.py` 负责设备连接与灯光帧重发，`__main__.py` 是命令行入口。桌面端通过 `desktop/bridge.py` 复用同一套实现，两边不会各写一份协议。
+
+```sh
+.venv/bin/python -m rk98 fill red            # 全键盘红色
+.venv/bin/python -m rk98 set esc blue        # 单键，键名见 rk98/protocol.py
+.venv/bin/python -m rk98 set 12 00ff00       # 按索引
+.venv/bin/python -m rk98 off                 # 全灭
+.venv/bin/python -m rk98 fill red --stay     # 持续到 Ctrl+C；默认发 10 秒后停
+```
+
+需要检查设备或标定键位时用 `tools/` 下的脚本：`probe.py` 枚举 HID 接口、`scan.py` 扫 Feature Report、`monitor.py` 轮询状态变化、`send.py` 读写 Feature / Output Report、`sweep.py` 逐点标定 LED 索引。`keymap_r98.json` 是 `sweep.py` 的标定原始记录，键位表以 `rk98/protocol.py` 为准。
 
 ## 开发与构建
 
@@ -74,6 +88,16 @@ npm test
 ## 实现与本地文件
 
 ```text
+rk98/                   # 键盘协议与设备控制（命令行与桌面端共用）
+├── protocol.py         # 常量、键位表、GRB 字节序与报告编解码
+├── device.py           # 设备连接、在线检测与灯光帧重发
+└── __main__.py         # 命令行入口：python -m rk98
+tools/                  # 逆向与调试脚本
+├── probe.py            # 枚举 HID 接口
+├── scan.py             # 扫描 Feature Report
+├── monitor.py          # 轮询状态变化
+├── send.py             # 读写 Feature / Output Report
+└── sweep.py            # 逐点标定 LED 索引
 desktop/
 ├── main.go             # MyGo 窗口、菜单、单实例、类型化进程通信
 ├── bridge.py           # 本地控制、灯效、配置、设备重连
@@ -81,9 +105,10 @@ desktop/
 ├── resources/          # 图标与构建时生成的本机 Python 路径
 ├── tests/              # 协议与界面测试
 └── build/darwin-arm64/光序.app
+keymap_r98.json         # sweep.py 的标定原始记录
 ```
 
 - 配置和预设：`~/Library/Application Support/光序/lighting.json`。
-- 控制桥复用 `rk.py` 的打包逻辑，保持每报告至少 7 毫秒间隔、每事务最多 18 个报告，帧之间至少 200 毫秒；多色超限时拆成多个安全事务。
+- 控制桥复用 `rk98` 的打包逻辑，保持每报告至少 7 毫秒间隔、每事务最多 18 个报告，帧之间至少 200 毫秒；多色超限时拆成多个安全事务。
 - 灯效运行在电脑上，不写固件或板载配置。更多逐键颜色会需要更多报告，因此实际刷新速度会降低；屏幕预览不要求和硬件逐帧锁相。
 - 图标由本地矢量资源生成；前端资源内嵌在应用中，运行时没有开发服务器或额外网络端口。

@@ -1,5 +1,4 @@
-#!/usr/bin/env python3
-"""RK R98 三模键盘 2.4G 灯光控制。
+"""RK R98 三模键盘 2.4G 灯光协议：常量、键位表与报告编解码。
 
 协议逆向自 https://github.com/Lightning-13/rk-m75 ，并在本机 RK R98 上实测验证。
 
@@ -18,19 +17,7 @@
     G R B   LED数量   LED索引...
 
 注意: 颜色字节序是 GRB，不是 RGB。
-
-用法:
-    rk.py fill red              全键盘红色
-    rk.py set esc blue          Esc 蓝色
-    rk.py set kp5 00ff00        小键盘 5 绿色
-    rk.py set 12 00ff00         索引 12 绿色
-    rk.py off                   全灭
-    rk.py raw 00 ff 00 01 06    直接发原生流
-    通用选项: --hold 秒(默认10)  --stay(持续到 Ctrl+C)
 """
-import sys
-import time
-import hid
 
 VID, PID = 0x3554, 0xFA09
 USAGE_PAGE = 0xFF02
@@ -120,93 +107,3 @@ def packetize(stream):
         r[19] = sum(r[:19]) & 0xFF
         reports.append(bytes(r))
     return reports
-
-
-def open_dev():
-    devs = hid.enumerate(VID, PID)
-    path = next(d["path"] for d in devs if d.get("usage_page") == USAGE_PAGE)
-    dev = hid.device()
-    dev.open_path(path)
-    return dev
-
-
-def pump(stream, hold):
-    """持续重发该帧；hold=0 表示一直发到 Ctrl+C。"""
-    reports = packetize(stream)
-    print("原生流 %d 字节 -> %d 个报告" % (len(stream), len(reports)), flush=True)
-    deadline = None if hold == 0 else time.monotonic() + hold
-    dev = None
-    frames = 0
-    try:
-        while True:
-            if dev is None:
-                try:
-                    dev = open_dev()
-                except Exception as e:
-                    time.sleep(0.5)
-                    continue
-            try:
-                for i, r in enumerate(reports):
-                    if dev.write(list(r)) != REPORT_SIZE:
-                        raise IOError("写入字节数不符")
-                    if i + 1 < len(reports):
-                        time.sleep(GAP_MS / 1000.0)
-            except OSError:
-                try:
-                    dev.close()
-                except Exception:
-                    pass
-                dev = None
-                time.sleep(0.3)
-                continue
-            frames += 1
-            if deadline is not None and time.monotonic() >= deadline:
-                break
-            time.sleep(0.2)
-    except KeyboardInterrupt:
-        print("\n已停止（键盘将回到自带灯效）")
-    finally:
-        if dev is not None:
-            dev.close()
-    print("共发送 %d 帧" % frames)
-
-
-def main():
-    args = sys.argv[1:]
-    if not args:
-        sys.exit(__doc__)
-
-    hold = 10.0
-    if "--stay" in args:
-        args.remove("--stay")
-        hold = 0.0
-    if "--hold" in args:
-        i = args.index("--hold")
-        hold = float(args[i + 1])
-        del args[i:i + 2]
-
-    cmd = args.pop(0)
-
-    if cmd == "fill":
-        color = parse_color(args[0])
-        stream = groups_to_stream([(color, list(range(LED_COUNT)))])
-    elif cmd == "off":
-        stream = groups_to_stream([((0, 0, 0), list(range(LED_COUNT)))])
-    elif cmd == "set":
-        target = args[0].lower()
-        index = KEYMAP.get(target)
-        if index is None:
-            index = NUMPAD.get(target)
-        if index is None:
-            index = int(target)
-        stream = groups_to_stream([(parse_color(args[1]), [index])])
-    elif cmd == "raw":
-        stream = bytes(int(x, 16) for x in args)
-    else:
-        sys.exit(__doc__)
-
-    pump(stream, hold)
-
-
-if __name__ == "__main__":
-    main()

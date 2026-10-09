@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""桌面程序的本地控制桥；复用 rk.py，不修改键盘固件或板载配置。"""
+"""桌面程序的本地控制桥；复用 rk98 包，不修改键盘固件或板载配置。"""
 import copy
 import json
 import math
@@ -12,10 +12,10 @@ import time
 import uuid
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-import rk
+import rk98
 
 # 覆盖原脚本的全部索引及已实测的右侧区块，不遗漏索引 102 之后的灯。
-INDICES = sorted(set(range(rk.LED_COUNT)) | set(rk.KEYMAP.values()) | set(rk.NUMPAD.values()))
+INDICES = sorted(set(range(rk98.LED_COUNT)) | set(rk98.KEYMAP.values()) | set(rk98.NUMPAD.values()))
 DEFAULT = {"mode": "solid", "color": "#80e8c0", "secondary": "#7e9bff",
            "brightness": 70, "speed": 45, "power": True, "overrides": {}}
 
@@ -42,8 +42,8 @@ def validate(settings):
 
 
 def frame_colors(settings, elapsed):
-    a = rk.parse_color(settings["color"][1:])
-    b = rk.parse_color(settings["secondary"][1:])
+    a = rk98.parse_color(settings["color"][1:])
+    b = rk98.parse_color(settings["secondary"][1:])
     period = 8 - settings["speed"] * 0.06
     level = settings["brightness"] / 100 if settings["power"] else 0
     if settings["mode"] == "breathe":
@@ -56,7 +56,7 @@ def frame_colors(settings, elapsed):
             mix = round((math.sin(index // 6 / 18 * math.tau - elapsed / period * math.tau) + 1) * 3.5) / 7
             color = tuple(round(x + (y - x) * mix) for x, y in zip(a, b))
         if str(index) in settings["overrides"]:
-            color = rk.parse_color(settings["overrides"][str(index)][1:])
+            color = rk98.parse_color(settings["overrides"][str(index)][1:])
         colors[index] = tuple(round(c * level) for c in color)
     return colors
 
@@ -69,13 +69,13 @@ def frame_reports(colors):
     transactions, batch, size = [], [], 0
     for rgb, indices in groups.items():
         cost = 4 + len(indices)
-        if size + cost > rk.MAX_REPORTS * rk.NATIVE_PAYLOAD:
-            transactions.append(rk.packetize(rk.groups_to_stream(batch)))
+        if size + cost > rk98.MAX_REPORTS * rk98.NATIVE_PAYLOAD:
+            transactions.append(rk98.packetize(rk98.groups_to_stream(batch)))
             batch, size = [], 0
         batch.append((rgb, indices))
         size += cost
     if batch:
-        transactions.append(rk.packetize(rk.groups_to_stream(batch)))
+        transactions.append(rk98.packetize(rk98.groups_to_stream(batch)))
     return transactions
 
 
@@ -175,18 +175,17 @@ class Controller:
                 try:
                     if not self.controlled:
                         self.close_device()
-                        self.connected = any(d.get("usage_page") == rk.USAGE_PAGE
-                                             for d in rk.hid.enumerate(rk.VID, rk.PID))
+                        self.connected = rk98.device_present()
                         self.message = "接收器已连接 · 使用键盘自带灯效" if self.connected else "未找到接收器，请检查 2.4G 连接"
                     else:
                         if self.device is None:
-                            self.device = rk.open_dev()
+                            self.device = rk98.open_dev()
                         reports = frame_reports(frame_colors(self.settings, time.monotonic() - started))
                         for transaction in reports:
                             for report in transaction:
-                                if self.device.write(list(report)) != rk.REPORT_SIZE:
+                                if self.device.write(list(report)) != rk98.REPORT_SIZE:
                                     raise OSError("写入不完整")
-                                time.sleep(rk.GAP_MS / 1000)
+                                time.sleep(rk98.GAP_MS / 1000)
                         self.connected = self.sending = True
                         self.message = "灯光已关闭" if not self.settings["power"] else "正在持续同步灯光"
                 except (OSError, StopIteration) as exc:

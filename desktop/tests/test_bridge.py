@@ -14,7 +14,7 @@ import bridge
 class FrameTests(unittest.TestCase):
     def test_all_right_hand_leds_are_included(self):
         colors = bridge.frame_colors(bridge.DEFAULT, 0)
-        self.assertTrue(set(bridge.rk.NUMPAD.values()) <= set(colors))
+        self.assertTrue(set(bridge.rk98.NUMPAD.values()) <= set(colors))
         self.assertIn(112, colors)
 
     def test_power_brightness_and_override(self):
@@ -35,10 +35,10 @@ class FrameTests(unittest.TestCase):
         transactions = bridge.frame_reports(colors)
         self.assertGreater(len(transactions), 1)
         for reports in transactions:
-            self.assertLessEqual(len(reports), bridge.rk.MAX_REPORTS)
+            self.assertLessEqual(len(reports), bridge.rk98.MAX_REPORTS)
             stream = bytearray()
             for seq, report in enumerate(reports):
-                self.assertEqual(len(report), bridge.rk.REPORT_SIZE)
+                self.assertEqual(len(report), bridge.rk98.REPORT_SIZE)
                 self.assertEqual(report[:4], bytes((0x13, 0x88, len(reports), seq)))
                 self.assertEqual(report[19], sum(report[:19]) & 255)
                 stream.extend(report[5:5 + report[4] - 0x10])
@@ -117,7 +117,7 @@ class ControllerTests(unittest.TestCase):
                 raise OSError('设备已断开')
             return device
         self.controller.request({"action": "apply", "settings": bridge.DEFAULT})
-        with patch.object(bridge.rk, 'open_dev', side_effect=open_device), patch.object(bridge.rk.hid, 'enumerate', return_value=[]):
+        with patch.object(bridge.rk98, 'open_dev', side_effect=open_device), patch.object(bridge.rk98, 'device_present', return_value=False):
             self.controller.thread.start()
             deadline = time.monotonic() + 3
             while not self.controller.sending and time.monotonic() < deadline:
