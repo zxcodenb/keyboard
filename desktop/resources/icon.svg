@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="tile" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#456856"/><stop offset="1" stop-color="#1f3f33"/></linearGradient>
+    <linearGradient id="light" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#d2f4ba"/><stop offset="1" stop-color="#86dcb4"/></linearGradient>
+    <filter id="shadow"><feDropShadow dx="0" dy="18" stdDeviation="14" flood-color="#173d26" flood-opacity=".2"/></filter>
+  </defs>
+  <rect x="80" y="80" width="864" height="864" rx="194" fill="url(#tile)" filter="url(#shadow)"/>
+  <rect x="82" y="82" width="860" height="860" rx="192" fill="none" stroke="#ffffff" stroke-opacity=".13" stroke-width="4"/>
+  <g fill="none" stroke="url(#light)" stroke-width="43" stroke-linecap="round" transform="rotate(-13 512 512)">
+    <path d="M255 390c86 82 171-82 257 0s171-82 257 0"/>
+    <path d="M255 515c86 82 171-82 257 0s171-82 257 0"/>
+    <path d="M255 640c86 82 171-82 257 0s171-82 257 0"/>
+  </g>
+</svg>

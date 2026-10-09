@@ -1,0 +1,17 @@
+{
+  "name": "keyboard-light-studio",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "prepare:local": "node prepare.mjs",
+    "dev": "npm run prepare:local && go run github.com/egoist/mygo/cmd/mygo dev",
+    "build": "npm run prepare:local && go run github.com/egoist/mygo/cmd/mygo build -skip-dmg",
+    "generate": "go run github.com/egoist/mygo/cmd/mygo generate",
+    "dev:web": "vite --host 127.0.0.1",
+    "build:web": "tsc --noEmit && vite build",
+    "test": "../.venv/bin/python -m unittest discover -s tests -v && go test ./... && tsc --noEmit && playwright test"
+  },
+  "dependencies": { "mygo-runtime": "0.3.6", "lucide": "^0.577.0" },
+  "devDependencies": { "@playwright/test": "^1.58.2", "typescript": "^5.9.3", "vite": "^8.0.0" }
+}

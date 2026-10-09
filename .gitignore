@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+*.pyc
+last_state.txt
+desktop/node_modules/
+desktop/dist/
+desktop/build/
+desktop/.mygo/
+desktop/resources/local.json
+desktop/test-results/
+desktop/playwright-report/
