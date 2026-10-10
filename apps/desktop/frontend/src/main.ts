@@ -1,11 +1,11 @@
 import './style.css';
-import { createIcons, Keyboard as KeyboardIcon, SlidersHorizontal, Bookmark, ArrowUpRight, Check, ChevronRight, Plus, Sun, Wind, Waves, Palette, Power, RotateCcw, X, Usb, Sparkles, MousePointer2, ShieldCheck, RefreshCw, Trash2, CircleHelp } from 'lucide';
+import { createIcons, Keyboard as KeyboardIcon, SlidersHorizontal, Bookmark, ArrowUpRight, Check, ChevronRight, Plus, Sun, Wind, Waves, Palette, Power, RotateCcw, X, Usb, Sparkles, MousePointer2, RefreshCw, Trash2, CircleHelp } from 'lucide';
 import { isMyGo } from 'mygo-runtime';
 import { Keyboard, type Settings, type Snapshot, type Preset } from './mygo';
 import { previewProfile } from './preview';
 
 const native = isMyGo();
-const icons = { Keyboard: KeyboardIcon, SlidersHorizontal, Bookmark, ArrowUpRight, Check, ChevronRight, Plus, Sun, Wind, Waves, Palette, Power, RotateCcw, X, Usb, Sparkles, MousePointer2, ShieldCheck, RefreshCw, Trash2, CircleHelp };
+const icons = { Keyboard: KeyboardIcon, SlidersHorizontal, Bookmark, ArrowUpRight, Check, ChevronRight, Plus, Sun, Wind, Waves, Palette, Power, RotateCcw, X, Usb, Sparkles, MousePointer2, RefreshCw, Trash2, CircleHelp };
 const icon = (name: string, extra = '') => `<i data-lucide="${name}" ${extra}></i>`;
 const $ = <T extends HTMLElement = HTMLElement>(selector: string) => document.querySelector<T>(selector)!;
 const escape = (text: string) => text.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
@@ -27,16 +27,16 @@ let ready = !native;
 let activePreset = 'mint';
 const modes: Record<string, string> = { solid: '常亮', breathe: '呼吸', wave: '流光' };
 const builtin = [
-  { id: 'mint', name: '薄荷微光', description: '一抹清新，专注当下', color: '#80e8c0', secondary: '#7e9bff', mode: 'solid', tag: '日常', css: 'mint' },
-  { id: 'sunset', name: '落日余温', description: '把黄昏留在指尖', color: '#ffc18c', secondary: '#ee8fac', mode: 'breathe', tag: '松弛', css: 'sunset' },
-  { id: 'aurora', name: '极光漫游', description: '让灵感自由流动', color: '#80e8c0', secondary: '#ad90ff', mode: 'wave', tag: '灵感', css: 'aurora' },
-  { id: 'night', name: '深夜蓝调', description: '安静陪伴每一个夜晚', color: '#91b8ff', secondary: '#8980de', mode: 'solid', tag: '夜间', css: 'night' },
+  { id: 'mint', name: '薄荷微光', color: '#80e8c0', secondary: '#7e9bff', mode: 'solid', css: 'mint' },
+  { id: 'sunset', name: '落日余温', color: '#ffc18c', secondary: '#ee8fac', mode: 'breathe', css: 'sunset' },
+  { id: 'aurora', name: '极光漫游', color: '#80e8c0', secondary: '#ad90ff', mode: 'wave', css: 'aurora' },
+  { id: 'night', name: '深夜蓝调', color: '#91b8ff', secondary: '#8980de', mode: 'solid', css: 'night' },
 ];
 
 $('#app').innerHTML = `
   <aside class="sidebar">
     <div class="window-drag"></div>
-    <a class="brand" href="#" data-action="studio" aria-label="光序首页"><span class="brand-mark">${icon('waves')}</span><span><strong>光序</strong><small>你的桌面，另一种光</small></span></a>
+    <a class="brand" href="#" data-action="studio" aria-label="光序首页"><span class="brand-mark">${icon('waves')}</span><strong>光序</strong></a>
     <div class="nav-caption">工作空间</div>
     <nav aria-label="主导航">
       <button class="nav-item active" data-action="studio">${icon('sliders-horizontal')}<span>灯光面板</span><span class="nav-dot"></span></button>
@@ -45,15 +45,14 @@ $('#app').innerHTML = `
     <div class="nav-caption device-caption">我的设备 <span>1</span></div>
     <div class="device-card"><div class="device-icon">${icon('keyboard')}</div><div><strong data-device-name></strong><span><b class="connection-dot"></b><span class="device-state">正在连接</span></span></div></div>
     <div class="sidebar-bottom">
-      <div class="local-note">${icon('shield-check')}<div><strong>只属于你的工作空间</strong><p>本地运行 · 无需联网</p></div></div>
       <button class="help-button" data-action="help">${icon('circle-help')}<span>使用小贴士</span>${icon('arrow-up-right')}</button>
       <div class="sidebar-version"><span>光序</span><span>0.1.0</span></div>
     </div>
   </aside>
   <div class="workspace">
-    <header class="topbar"><div>工作空间 ${icon('chevron-right')} <span id="breadcrumb">灯光面板</span></div><span class="privacy-label">${icon('shield-check')} 为你的桌面而造</span></header>
+    <header class="topbar"><div>工作空间 ${icon('chevron-right')} <span id="breadcrumb">灯光面板</span></div></header>
     <main>
-      <section class="page-heading"><div><div class="eyebrow">一点色彩，刚刚好</div><h1>灯光，随心而动<span>。</span></h1><p id="page-subtitle">让熟悉的键盘，拥有你的色彩。</p></div><div class="connection-pill"><b class="connection-dot"></b><span id="connection-label">正在连接</span></div></section>
+      <section class="page-heading"><div><h1>灯光，随心而动<span>。</span></h1></div><div class="connection-pill"><b class="connection-dot"></b><span id="connection-label">正在连接</span></div></section>
       <div id="error-banner" role="alert" hidden><span></span><div class="error-actions"><button id="permission-button" data-action="permissions" hidden>打开输入监控 ${icon('arrow-up-right')}</button><button data-action="retry">重新连接 ${icon('refresh-cw')}</button></div></div>
       <div id="preview-banner" ${native ? 'hidden' : ''}>浏览器仅展示界面，不连接键盘。请打开「光序」桌面应用以控制灯光。</div>
       <section class="keyboard-card studio-only" aria-label="键盘灯光预览">
@@ -63,16 +62,15 @@ $('#app').innerHTML = `
         <div class="scope-toolbar"><div class="scope-buttons" aria-label="选择键盘区域"><button class="active" data-scope="all">整个键盘</button></div><button class="selection-status" data-action="clear-selection">全键编辑 <span>·</span> 点击按键可多选</button></div>
       </section>
       <div class="controls-grid studio-only">
-        <section class="control-card effects-card"><div class="card-title"><h2>${icon('sparkles')} 灯光效果</h2><span class="subtle-label">让光有自己的节奏</span></div><div class="effect-options" role="group" aria-label="灯光效果">${[['solid', 'sun', '常亮', '简单，亦是美'], ['breathe', 'wind', '呼吸', '像呼吸般自然'], ['wave', 'waves', '流光', '色彩缓缓流动']].map(([mode, glyph, title, desc]) => `<button class="effect-option" data-mode="${mode}" aria-pressed="false">${icon(glyph)}<strong>${title}</strong><small>${desc}</small><span class="effect-check">${icon('check')}</span></button>`).join('')}</div><div class="effect-bottom"><div id="solid-note">${icon('sun')} 恒定的光，恰到好处的陪伴。</div><label id="speed-control" hidden><span>变化速度</span><input type="range" id="speed" min="0" max="100" value="45" aria-label="变化速度"/><output id="speed-value">45%</output></label></div></section>
-        <section class="control-card color-card"><div class="card-title"><h2>${icon('palette')} <span id="color-title">颜色与亮度</span></h2><button class="text-button" data-action="reset-keys" id="reset-keys" hidden>清除单键配色</button></div><div class="color-row"><div class="swatches" role="group" aria-label="快捷颜色">${['#80e8c0', '#91b8ff', '#b79af5', '#f1a4bc', '#ffc18c', '#f3e4a4', '#e8edef'].map(color => `<button class="swatch" data-color="${color}" style="--swatch:${color}" aria-label="选择颜色 ${color}">${icon('check')}</button>`).join('')}</div><label class="custom-color" title="自定义颜色">${icon('plus')}<input type="color" id="color-picker" value="#80e8c0" aria-label="自定义颜色"/></label></div><div class="color-detail"><label class="hex-field"><span id="hex-dot"></span><input id="hex-input" aria-label="十六进制颜色" value="#80E8C0" maxlength="7" spellcheck="false"/><span>HEX</span></label><span id="color-description">一抹清新薄荷绿</span><label class="secondary-color" id="secondary-control" hidden>另一种颜色<input type="color" id="secondary" value="#7e9bff" aria-label="流光第二种颜色"/></label></div><label class="brightness-control"><span>${icon('sun')} 亮度</span><input id="brightness" type="range" min="0" max="100" value="70" aria-label="灯光亮度"/><output id="brightness-value">70<span>%</span></output></label></section>
+        <section class="control-card effects-card"><div class="card-title"><h2>${icon('sparkles')} 灯光效果</h2></div><div class="effect-options" role="group" aria-label="灯光效果">${[['solid', 'sun', '常亮'], ['breathe', 'wind', '呼吸'], ['wave', 'waves', '流光']].map(([mode, glyph, title]) => `<button class="effect-option" data-mode="${mode}" aria-pressed="false">${icon(glyph)}<strong>${title}</strong><span class="effect-check">${icon('check')}</span></button>`).join('')}</div><div class="effect-bottom"><label id="speed-control" hidden><span>变化速度</span><input type="range" id="speed" min="0" max="100" value="45" aria-label="变化速度"/><output id="speed-value">45%</output></label></div></section>
+        <section class="control-card color-card"><div class="card-title"><h2>${icon('palette')} <span id="color-title">颜色与亮度</span></h2><button class="text-button" data-action="reset-keys" id="reset-keys" hidden>清除单键配色</button></div><div class="color-row"><div class="swatches" role="group" aria-label="快捷颜色">${['#80e8c0', '#91b8ff', '#b79af5', '#f1a4bc', '#ffc18c', '#f3e4a4', '#e8edef'].map(color => `<button class="swatch" data-color="${color}" style="--swatch:${color}" aria-label="选择颜色 ${color}">${icon('check')}</button>`).join('')}</div><label class="custom-color" title="自定义颜色">${icon('plus')}<input type="color" id="color-picker" value="#80e8c0" aria-label="自定义颜色"/></label></div><div class="color-detail"><label class="hex-field"><span id="hex-dot"></span><input id="hex-input" aria-label="十六进制颜色" value="#80E8C0" maxlength="7" spellcheck="false"/><span>HEX</span></label><label class="secondary-color" id="secondary-control" hidden>另一种颜色<input type="color" id="secondary" value="#7e9bff" aria-label="流光第二种颜色"/></label></div><label class="brightness-control"><span>${icon('sun')} 亮度</span><input id="brightness" type="range" min="0" max="100" value="70" aria-label="灯光亮度"/><output id="brightness-value">70<span>%</span></output></label></section>
       </div>
-      <section class="presets-section"><div class="section-heading"><div><h2 id="presets-title">从一束喜欢的光开始</h2><span id="presets-subtitle">为不同的心情，留一点色彩。</span></div><button class="save-button" data-action="save">${icon('plus')} 保存当前预设</button></div><div class="preset-grid" id="preset-grid"></div><div id="library-empty" hidden>${icon('bookmark')}<h3>收藏你自己的那束光</h3><p>调好颜色后，点击「保存当前预设」，下次一键点亮。</p></div></section>
-      <div class="gentle-note studio-only">${icon('sparkles')} 好的氛围，从指尖开始。<span>修改即同步，无需额外应用。</span></div>
+      <section class="presets-section"><div class="section-heading"><div><h2 id="presets-title">从一束喜欢的光开始</h2></div><button class="save-button" data-action="save">${icon('plus')} 保存当前预设</button></div><div class="preset-grid" id="preset-grid"></div><div id="library-empty" hidden>${icon('bookmark')}<h3>收藏你自己的那束光</h3><p>调好颜色后，点击「保存当前预设」，下次一键点亮。</p></div></section>
     </main>
     <footer class="statusbar"><div><span class="footer-dot"></span><span id="sync-status">正在连接控制程序</span><small id="status-detail">设置仅保存在本机</small></div><div class="footer-actions"><button class="restore-button" data-action="release">${icon('rotate-ccw')} 恢复键盘自带灯效</button><button class="power-button" data-action="power">${icon('power')}<span>开启灯光</span></button></div></footer>
   </div>
-  <dialog id="preset-dialog"><form id="preset-form"><div class="dialog-heading"><span class="dialog-icon">${icon('bookmark')}</span><button type="button" class="icon-button" data-action="close-dialog" aria-label="关闭">${icon('x')}</button></div><h2>留住这一刻的色彩</h2><p>给你的灯光起个名字，下次一键找回。</p><label for="preset-name">预设名称</label><input id="preset-name" maxlength="24" placeholder="例如：我的专注时刻" required autocomplete="off"/><div class="dialog-actions"><button type="button" data-action="close-dialog">取消</button><button class="primary-button" type="submit">保存预设 ${icon('check')}</button></div></form></dialog>
-  <dialog id="help-dialog"><div class="dialog-heading"><span class="dialog-icon">${icon('sparkles')}</span><button class="icon-button" data-action="close-dialog" aria-label="关闭">${icon('x')}</button></div><h2>让每一束光，恰到好处</h2><div class="help-list"><p><strong>点选，就是你的调色板</strong>点击键帽可多选，再选择颜色；点击「整个键盘」恢复全键编辑。单键配色会覆盖灯效基础色。</p><p><strong>关灯，不等于停止控制</strong>「关闭灯光」持续发送黑色；「恢复键盘自带灯效」停止发送，让键盘自行接管。</p><p><strong>关掉窗口，光也会留下</strong>关闭窗口后程序继续运行，点击程序坞图标重新打开。按 ⌘Q 退出后恢复键盘自带灯效。</p><p id="device-note"></p></div></dialog>
+  <dialog id="preset-dialog"><form id="preset-form"><div class="dialog-heading"><span class="dialog-icon">${icon('bookmark')}</span><button type="button" class="icon-button" data-action="close-dialog" aria-label="关闭">${icon('x')}</button></div><h2>保存预设</h2><label for="preset-name">预设名称</label><input id="preset-name" maxlength="24" placeholder="例如：我的专注时刻" required autocomplete="off"/><div class="dialog-actions"><button type="button" data-action="close-dialog">取消</button><button class="primary-button" type="submit">保存预设 ${icon('check')}</button></div></form></dialog>
+  <dialog id="help-dialog"><div class="dialog-heading"><span class="dialog-icon">${icon('sparkles')}</span><button class="icon-button" data-action="close-dialog" aria-label="关闭">${icon('x')}</button></div><h2>使用小贴士</h2><div class="help-list"><p><strong>点选与开关灯</strong>点选键帽可多选配色，单键配色会覆盖灯效基础色；「关闭灯光」持续发送黑色，「恢复键盘自带灯效」停止发送，让键盘自行接管。</p><p><strong>关掉窗口，光也会留下</strong>关闭窗口后程序继续运行，点击程序坞图标重新打开；按 ⌘Q 退出后恢复键盘自带灯效。</p><p id="device-note"></p></div></dialog>
   <div id="toast" role="status" hidden>${icon('check')}<span></span></div>
 `;
 
@@ -127,11 +125,8 @@ function refreshControls() {
   $('#speed-value').textContent = `${settings.speed}%`;
   $('#brightness').style.setProperty('--fill', `${settings.brightness}%`);
   $('#speed').style.setProperty('--fill', `${settings.speed}%`);
-  $('#solid-note').hidden = settings.mode !== 'solid';
   $('#speed-control').hidden = settings.mode === 'solid';
   $('#secondary-control').hidden = settings.mode !== 'wave';
-  $('#color-description').hidden = settings.mode === 'wave';
-  $('#color-description').textContent = color.toLowerCase() === '#80e8c0' ? '一抹清新薄荷绿' : selected.size ? '为选中的按键上色' : '你的专属色彩';
   $('#color-title').textContent = selected.size ? `单键颜色 · 已选 ${selected.size} 键` : '颜色与亮度';
   $('#reset-keys').hidden = Object.keys(settings.overrides).length === 0;
   $('.selection-status').innerHTML = selected.size ? `已选 ${selected.size} 个按键 <span>·</span> 取消选择 ×` : '全键编辑 <span>·</span> 点击按键可多选';
@@ -144,7 +139,7 @@ function refreshControls() {
   refreshStatus();
 }
 function renderPresets() {
-  $('#preset-grid').innerHTML = builtin.map(p => `<button class="preset-card ${p.css}" data-preset="${p.id}"><div class="preset-art"><span class="preset-tag">${p.tag}</span><div class="mini-keys">${Array.from({ length: 20 }, (_, i) => `<i style="--i:${i}"></i>`).join('')}</div><span class="preset-check">${icon('check')}</span></div><div class="preset-info"><strong>${p.name}</strong><small>${p.description}</small></div></button>`).join('') + presets.map(p => `<div class="saved-preset-wrap"><button class="preset-card custom-preset" data-preset="${escape(p.id)}" style="--preset-color:${p.settings.color};--preset-second:${p.settings.secondary}"><div class="preset-art"><span class="preset-tag">${modes[p.settings.mode]}</span><div class="mini-keys">${Array.from({ length: 20 }, (_, i) => `<i style="--i:${i}"></i>`).join('')}</div><span class="preset-check">${icon('check')}</span></div><div class="preset-info"><strong>${escape(p.name)}</strong><small>我的配色 · ${p.settings.brightness}% 亮度</small></div></button><button class="delete-preset" data-delete="${escape(p.id)}" title="删除预设" aria-label="删除预设 ${escape(p.name)}">${icon('trash-2')}</button></div>`).join('');
+  $('#preset-grid').innerHTML = builtin.map(p => `<button class="preset-card ${p.css}" data-preset="${p.id}"><div class="preset-art"><div class="mini-keys">${Array.from({ length: 20 }, (_, i) => `<i style="--i:${i}"></i>`).join('')}</div><span class="preset-check">${icon('check')}</span></div><div class="preset-info"><strong>${p.name}</strong></div></button>`).join('') + presets.map(p => `<div class="saved-preset-wrap"><button class="preset-card custom-preset" data-preset="${escape(p.id)}" style="--preset-color:${p.settings.color};--preset-second:${p.settings.secondary}"><div class="preset-art"><div class="mini-keys">${Array.from({ length: 20 }, (_, i) => `<i style="--i:${i}"></i>`).join('')}</div><span class="preset-check">${icon('check')}</span></div><div class="preset-info"><strong>${escape(p.name)}</strong><small>我的配色 · ${p.settings.brightness}% 亮度</small></div></button><button class="delete-preset" data-delete="${escape(p.id)}" title="删除预设" aria-label="删除预设 ${escape(p.name)}">${icon('trash-2')}</button></div>`).join('');
   $('.nav-count').textContent = String(4 + presets.length);
   $('#library-empty').hidden = view !== 'library' || presets.length > 0;
   refreshIcons(); refreshControls();
@@ -187,7 +182,6 @@ function setView(next: string) {
   document.body.classList.toggle('library-view', view === 'library');
   $('#breadcrumb').textContent = view === 'library' ? '我的预设' : '灯光面板';
   $('h1').innerHTML = view === 'library' ? '把喜欢的光，留在手边<span>。</span>' : '灯光，随心而动<span>。</span>';
-  $('#page-subtitle').textContent = view === 'library' ? '收藏每一种心情，下次见面，一键点亮。' : '让熟悉的键盘，拥有你的色彩。';
   $('#presets-title').textContent = view === 'library' ? '你的灯光收藏' : '从一束喜欢的光开始';
   for (const el of document.querySelectorAll<HTMLElement>('.nav-item')) el.classList.toggle('active', el.dataset.action === view);
   $('#library-empty').hidden = view !== 'library' || presets.length > 0;
